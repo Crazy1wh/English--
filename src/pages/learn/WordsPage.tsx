@@ -13,11 +13,11 @@ const LEVELS: { key: WordLevel | 'all' | 'due' | 'new'; label: string }[] = [
   { key: 'all', label: '全部' },
   { key: 'due', label: '待复习' },
   { key: 'new', label: '未学' },
-  { key: 'L1', label: 'L1 核心' },
-  { key: 'L2', label: 'L2 成考' },
-  { key: 'L3', label: 'L3 阅读' },
-  { key: 'L4', label: 'L4 高频' },
-  { key: 'L5', label: 'L5 拔高' },
+  { key: 'L1', label: 'L1 基础辨析' },
+  { key: 'L2', label: 'L2 四级基础' },
+  { key: 'L3', label: 'L3 四级核心' },
+  { key: 'L4', label: 'L4 四级进阶' },
+  { key: 'L5', label: 'L5 高分易混' },
 ];
 
 const LEVEL_COLOR: Record<string, 'red' | 'brand' | 'purple' | 'amber' | 'green'> = {
@@ -53,7 +53,8 @@ export function WordsPage() {
       <PageHeader title="词汇" back="/learn" />
       <div className="px-4 pt-3">
         <div className="rounded-xl bg-slate-100 p-3 text-xs leading-5 text-slate-500">
-          词库按成考专升本所需词汇（约 3800，高中→大学四级难度）分级：L1 核心生存词、L2 成考基础、L3 阅读识别词、L4 高频核心词、L5 拔高易混词。
+          面向有初中基础、以大学四级为目标的学习者：L1 基础辨析（初中学过但考试高频的易混词）、L2 四级基础、
+          L3 四级核心、L4 四级进阶、L5 高分易混（形近/义近辨析）。已剔除 be / have / do 等极简词。
           均为手工整理的通用词表（source: manual），非真题词频统计，frequencyScore 暂不排序；官方大纲词表可在内容管理中导入。
         </div>
 
