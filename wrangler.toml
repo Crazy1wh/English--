@@ -1,0 +1,10 @@
+# ============================================================
+# Cloudflare Pages 项目配置（纯静态 React/Vite SPA，无 Functions）
+# 仅用于 `wrangler pages deploy` CLI 部署时识别项目名与产物目录。
+# 注意：Pages 项目标志是 pages_build_output_dir；
+#       不要使用 [assets] / assets.directory —— 那是 Workers Static Assets，
+#       会触发 @cloudflare/vite-plugin 并要求 Vite 6。
+# 文档：https://developers.cloudflare.com/pages/functions/wrangler-configuration/
+# ============================================================
+name = "english"
+pages_build_output_dir = "./dist"

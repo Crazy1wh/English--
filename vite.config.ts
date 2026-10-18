@@ -10,7 +10,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: './',
+  // 部署在 Cloudflare Pages 独立域名/自定义域名根路径，使用绝对根路径
+  base: '/',
   build: {
     rollupOptions: {
       output: {

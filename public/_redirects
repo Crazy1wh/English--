@@ -1,0 +1,4 @@
+# SPA 前端路由回退：未命中静态文件的路径全部交给 index.html
+# （当前使用 HashRouter 时非必需，但可保证日后切换 BrowserRouter 或
+#  直接访问 /practice、/words 等路径时不返回 404）
+/*    /index.html   200
