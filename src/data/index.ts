@@ -1,4 +1,4 @@
-import { KNOWLEDGE_TREE } from './taxonomy';
+import { KNOWLEDGE_TREE, canonicalGrammarTag } from './taxonomy';
 import { SEED_WORDS as BASE_WORDS } from './words';
 import { EXTRA_WORDS } from './words-extra';
 import { GRAMMAR_TOPICS } from './grammar';
@@ -6,6 +6,7 @@ import { EXAM_POINTS } from './examPoints';
 import { SEED_QUESTIONS as DEMO_QUESTIONS } from './questions';
 import { REAL_QUESTIONS } from './real-questions';
 import { MORE_QUESTIONS } from './more-questions';
+import { SPECIAL_QUESTIONS } from './special-questions';
 import { DIALOGUE_SCENES } from './dialogue';
 import { WRITING_KITS, COMMON_CONNECTORS, ALL_SAFE_SENTENCES } from './writing';
 import { MOCK_PAPERS } from './papers';
@@ -24,11 +25,12 @@ export const SEED_WORDS: Word[] = (() => {
   return out;
 })();
 
-// 演示题（82 道）+ 已核验真题 + 第三方模拟题 + 扩充题库
-export const SEED_QUESTIONS: Question[] = [...DEMO_QUESTIONS, ...REAL_QUESTIONS, ...MORE_QUESTIONS];
+// 演示题（82 道）+ 已核验真题 + 第三方模拟题 + 扩充题库 + 语法专项练习题
+export const SEED_QUESTIONS: Question[] = [...DEMO_QUESTIONS, ...REAL_QUESTIONS, ...MORE_QUESTIONS, ...SPECIAL_QUESTIONS];
 
 export {
   KNOWLEDGE_TREE,
+  canonicalGrammarTag,
   GRAMMAR_TOPICS,
   EXAM_POINTS,
   DIALOGUE_SCENES,

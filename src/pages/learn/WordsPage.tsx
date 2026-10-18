@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import { ChevronRight, Play, RotateCcw } from 'lucide-react';
+import { ChevronRight, Play, RotateCcw, Volume2 } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { Chip, EmptyState, MasteryBar } from '@/components/ui';
 import { allWords } from '@/store/db';
 import { useStore } from '@/store/useStore';
 import { isDue } from '@/engine/forgetting';
 import { todayStr } from '@/engine/date';
+import { speak } from '@/lib/speech';
 import type { Word, WordLevel } from '@/types';
 
 const LEVELS: { key: WordLevel | 'all' | 'due' | 'new'; label: string }[] = [
@@ -128,7 +129,12 @@ function WordDetail({ word, onClose }: { word: Word; onClose: () => void }) {
       >
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-2xl font-bold text-slate-800">{word.word}</h3>
+            <div className="flex items-center gap-2 text-2xl font-bold text-slate-800">
+              {word.word}
+              <button onClick={() => speak(word.word)} className="text-brand-500 hover:text-brand-700" aria-label="播放单词发音">
+                <Volume2 size={18} />
+              </button>
+            </div>
             <p className="mt-1 text-sm text-slate-400">
               {word.phonetic} · {word.partOfSpeech} · <Chip color="brand">{word.level}</Chip>
             </p>

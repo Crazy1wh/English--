@@ -34,8 +34,11 @@ export function PracticePage() {
 
   const weak = weakTags(s.attempts, questionsById(), 2, 3);
 
-  const sessionLink = (ids: string[], title: string, extra = '') =>
-    `/practice/session?ids=${ids.join(',')}&title=${encodeURIComponent(title)}${extra}`;
+  // 按题型随机抽题（每组默认 20 题，阅读/完形按整篇）
+  const sectionLink = (key: string, title: string) =>
+    `/practice/session?section=${key}&title=${encodeURIComponent(title)}`;
+  const sessionLink = (ids: string[], title: string) =>
+    `/practice/session?ids=${ids.join(',')}&title=${encodeURIComponent(title)}`;
 
   return (
     <div className="pb-nav">
@@ -69,15 +72,15 @@ export function PracticePage() {
           <h2 className="mb-2 text-sm font-semibold text-slate-500">按题型刷</h2>
           <div className="grid grid-cols-2 gap-2">
             {SECTIONS.map((sec) => {
-              const ids = questions.filter((q) => q.section === sec.key).map((q) => q.id);
+              const count = questions.filter((q) => q.section === sec.key).length;
               return (
-                <Link key={sec.key} to={sessionLink(ids, sec.label)} className="card flex items-center gap-3 p-4 hover:bg-slate-50">
+                <Link key={sec.key} to={sectionLink(sec.key, sec.label)} className="card flex items-center gap-3 p-4 hover:bg-slate-50">
                   <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${sec.color}`}>
                     <sec.icon size={20} />
                   </div>
                   <div>
                     <div className="text-sm font-medium text-slate-800">{sec.label}</div>
-                    <div className="text-xs text-slate-400">{ids.length} 题</div>
+                    <div className="text-xs text-slate-400">{count} 题 · 每组 20</div>
                   </div>
                 </Link>
               );

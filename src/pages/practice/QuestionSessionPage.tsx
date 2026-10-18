@@ -15,6 +15,22 @@ export function QuestionSessionPage() {
   const { questions, wrongsMap } = useMemo(() => {
     const all = allQuestions();
     let ids = params.get('ids')?.split(',').filter(Boolean) ?? [];
+    const section = params.get('section');
+    if (ids.length === 0 && section) {
+      // 按题型随机抽题组卷：阅读/完形按整篇 group 抽，其余按单题抽，避免一次刷上百题
+      const limit = Math.max(1, Number(params.get('limit') ?? '20') || 20);
+      const pool = all.filter((q) => q.section === section);
+      if (section === 'Reading' || section === 'Cloze') {
+        const groups = Array.from(new Set(pool.map((q) => q.groupId).filter(Boolean))) as string[];
+        for (const g of groups.sort(() => Math.random() - 0.5)) {
+          const gIds = pool.filter((q) => q.groupId === g).map((q) => q.id);
+          if (ids.length + gIds.length > limit && ids.length > 0) break;
+          ids.push(...gIds);
+        }
+      } else {
+        ids = pool.sort(() => Math.random() - 0.5).slice(0, limit).map((q) => q.id);
+      }
+    }
     if (ids.length === 0 && isWrong) {
       ids = s.wrongs.filter((w) => !w.resolved).map((w) => w.questionId);
     }

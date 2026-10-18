@@ -1,0 +1,20 @@
+# Cloudflare Headers —— 成考英语学习平台（纯静态站点）
+
+# 带内容哈希的构建产物：永久强缓存
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 入口与静态文本：必须重新验证，保证发版即时生效
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/robots.txt
+  Cache-Control: public, max-age=3600
+/favicon.svg
+  Cache-Control: public, max-age=86400
+
+# 关闭 MIME 嗅探、限制 referrer（无后端、无敏感外发）
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

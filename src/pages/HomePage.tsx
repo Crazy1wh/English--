@@ -253,7 +253,7 @@ export function HomePage() {
         </Link>
       </div>
       <p className="mt-3 text-center text-xs text-slate-400">
-        已学词 {stats.learnedWords}/{stats.totalWords} · 待复习 {dueWords} · 本平台演示数据均非真题
+        已学词 {stats.learnedWords}/{stats.totalWords} · 待复习 {dueWords} · 题库含已核验真题与第三方模拟题，做题时请看来源徽章
       </p>
     </div>
   );

@@ -6,12 +6,14 @@
 
 import {
   ALL_SAFE_SENTENCES,
+  DIALOGUE_SCENES,
   EXAM_POINTS,
   GRAMMAR_TOPICS,
   MOCK_PAPERS,
   QUESTIONS_BY_ID,
   SEED_QUESTIONS,
   SEED_WORDS,
+  canonicalGrammarTag,
 } from '@/data';
 import {
   INITIAL_MASTERY,
@@ -109,13 +111,87 @@ function load(): PersistState {
 let state: PersistState = load();
 const listeners = new Set<() => void>();
 
-function persist() {
+/** 存储健康状态：配额超限/隐私模式写入失败时 degraded=true，供设置页提示用户导出 */
+let storageDegraded = false;
+/** 本次会话因配额压力裁剪掉的旧记录条数（仅用于提示） */
+let storagePruned = 0;
+
+function isQuotaError(e: unknown): boolean {
+  if (!e || typeof e !== 'object') return false;
+  const err = e as { name?: string; code?: number };
+  return err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED' || err.code === 22 || err.code === 1014;
+}
+
+function daysAgoDate(days: number): string {
+  return new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+}
+
+/**
+ * 裁剪冷数据以腾出 localStorage 空间。
+ * 安全边界：只删不影响当前学习闭环的旧数据——
+ *  - 计划/趋势只看近 7 天，预测分为聚合正确率，故 365 天前的答题记录可删；
+ *  - 已 resolved 的错题不再参与复习状态机，90 天后可删；
+ *  - 自定义词/题（用户内容）与设置永不裁剪。
+ */
+function pruneState(s: PersistState, aggressive: boolean): number {
+  const attemptCutoff = new Date(daysAgoDate(aggressive ? 120 : 365)).toISOString();
+  const wrongCutoff = daysAgoDate(aggressive ? 30 : 90);
+  const dayCutoff = daysAgoDate(aggressive ? 150 : 400);
+
+  const before = s.attempts.length;
+  s.attempts = s.attempts.filter((a) => a.at >= attemptCutoff);
+  s.wrongs = s.wrongs.filter((w) => !(w.resolved && w.lastAt.slice(0, 10) < wrongCutoff));
+  for (const k of Object.keys(s.dayLogs)) {
+    if (k < dayCutoff) delete s.dayLogs[k];
+  }
+  if (aggressive) s.essays = s.essays.slice(0, 100); // addEssay 为 unshift，保留最新 100 篇
+  return before - s.attempts.length;
+}
+
+function writeStorage(s: PersistState): boolean {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    return true;
   } catch (e) {
-    console.error('持久化失败', e);
+    if (!isQuotaError(e)) console.error('持久化失败', e);
+    return false;
+  }
+}
+
+function persist() {
+  if (writeStorage(state)) {
+    storageDegraded = false;
+  } else {
+    // 写入失败（大概率为配额超限）：裁剪冷数据后重试，再失败则更激进裁剪
+    storagePruned += Math.max(0, pruneState(state, false));
+    if (!writeStorage(state)) {
+      storagePruned += Math.max(0, pruneState(state, true));
+      storageDegraded = !writeStorage(state);
+    } else {
+      storageDegraded = false;
+    }
+    if (storageDegraded) console.error('持久化失败：本地存储不可用或空间不足，请在设置中导出备份后清理数据');
   }
   listeners.forEach((l) => l());
+}
+
+export interface StorageHealth {
+  /** 是否无法可靠写入（配额超限 / 隐私模式 / 浏览器禁用存储） */
+  degraded: boolean;
+  /** 当前持久化占用，单位 KB（0 表示尚未写入） */
+  approxKb: number;
+  /** 本次会话因空间压力裁剪的旧记录条数 */
+  pruned: number;
+}
+
+export function getStorageHealth(): StorageHealth {
+  let approxKb = 0;
+  try {
+    approxKb = Math.round((localStorage.getItem(STORAGE_KEY)?.length ?? 0) / 1024);
+  } catch {
+    // ignore
+  }
+  return { degraded: storageDegraded, approxKb, pruned: storagePruned };
 }
 
 function setState(mut: (draft: PersistState) => void) {
@@ -193,7 +269,8 @@ export function ownerKeysForQuestion(q: Question): { kind: string; id: string }[
     for (const tag of q.knowledgeTags.filter((t) => t.startsWith('dialogue.'))) owners.push({ kind: 'dialogue_scene', id: tag.split('.')[1]! });
   }
   if (q.section === 'Grammar' || q.knowledgeTags.some((t) => t.startsWith('grammar.'))) {
-    for (const tag of q.knowledgeTags.filter((t) => t.startsWith('grammar.'))) {
+    for (const rawTag of q.knowledgeTags.filter((t) => t.startsWith('grammar.'))) {
+      const tag = canonicalGrammarTag(rawTag);
       const topic = GRAMMAR_TOPICS.find((g) => tag === g.knowledgeId || tag.startsWith(g.knowledgeId + '.'));
       if (topic) owners.push({ kind: 'grammar', id: topic.id });
     }
@@ -395,8 +472,11 @@ export function exportData(): string {
 }
 
 export function restoreData(json: string) {
-  const parsed = JSON.parse(json) as PersistState;
-  state = { ...defaultState(), ...parsed };
+  const parsed = JSON.parse(json) as Partial<PersistState>;
+  if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.attempts) || !parsed.settings) {
+    throw new Error('备份文件结构不正确：缺少 settings 或 attempts');
+  }
+  state = { ...defaultState(), ...parsed, settings: { ...defaultSettings(), ...parsed.settings, ai: { ...defaultSettings().ai, ...parsed.settings.ai } } } as PersistState;
   persist();
 }
 
@@ -443,6 +523,12 @@ export function getPaperQuestions(paperId: string) {
   return paper.questionIds.map((id) => questionsById().get(id)).filter((q): q is Question => !!q);
 }
 
+/** 一张卷是否为"已核验真题卷"：以题目级 isRealExam 为准（paper 元数据不可靠时仍然正确） */
+export function paperIsReal(paperId: string): boolean {
+  const qs = getPaperQuestions(paperId);
+  return qs.length > 0 && qs.every((q) => q.isRealExam);
+}
+
 export function masteryStats() {
   const words = Object.values(state.wordProgress);
   const wordRate = words.length === 0 ? 0 : averageMastery(words.map((w) => w.mastery));
@@ -454,7 +540,7 @@ export function masteryStats() {
     Array.from({ length: 10 }, (_, i) => getMastery('cloze_skill', `C${String(i + 1).padStart(2, '0')}`)),
   );
   const dialogueRate = averageMastery(
-    Array.from({ length: 15 }, (_, i) => getMastery('dialogue_scene', `D${String(i + 1).padStart(2, '0')}`)),
+    DIALOGUE_SCENES.map((d) => getMastery('dialogue_scene', d.id)),
   );
   const writing = state.essays[0]?.totalEstimate ?? null;
   return { wordRate, grammarRate, readingRate, clozeRate, dialogueRate, writing, learnedWords: words.length, totalWords: allWords().length };

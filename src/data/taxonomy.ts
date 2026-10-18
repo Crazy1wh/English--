@@ -89,6 +89,8 @@ export const KNOWLEDGE_TREE: KnowledgeNode[] = [
     ['D01', '问候'], ['D02', '介绍'], ['D03', '感谢'], ['D04', '道歉'], ['D05', '邀请'],
     ['D06', '建议'], ['D07', '请求'], ['D08', '问路'], ['D09', '购物'], ['D10', '餐厅'],
     ['D11', '看病'], ['D12', '打电话'], ['D13', '祝贺'], ['D14', '赞同'], ['D15', '告别'],
+    ['D16', '天气'], ['D17', '住酒店'], ['D18', '银行与邮局'], ['D19', '求职面试'],
+    ['D20', '校园学习'], ['D21', '交通出行'], ['D22', '兴趣爱好'],
   ] as const).map(([d, name], i) => ({
     id: `dialogue.${d}`,
     parentId: 'dialogue',
@@ -104,3 +106,48 @@ export const KNOWLEDGE_TREE: KnowledgeNode[] = [
   { id: 'writing.W3', parentId: 'writing', category: 'Writing', displayName: '连接表达', order: 3 },
   { id: 'writing.W4', parentId: 'writing', category: 'Writing', displayName: '安全句型', order: 4 },
 ];
+
+// ============================================================
+// 真题/第三方题使用扁平标签（如 grammar.tense），语法 22 讲使用层级
+// knowledgeId（如 grammar.verb.tense）。本表把题目标签归一到标准知识树节点，
+// 让真题的答题数据能正确归因到语法讲的掌握度与"真题示例"。
+// ============================================================
+const GRAMMAR_TAG_ALIASES: Record<string, string> = {
+  'grammar.tense': 'grammar.verb.tense',
+  'grammar.voice': 'grammar.verb.passive',
+  'grammar.participle': 'grammar.non_finite',
+  'grammar.infinitive': 'grammar.non_finite',
+  'grammar.causative': 'grammar.non_finite',
+  'grammar.modal': 'grammar.modal',
+  'grammar.relative': 'grammar.clause.relative',
+  'grammar.wh': 'grammar.clause.relative',
+  'grammar.conditional': 'grammar.clause.adverbial',
+  'grammar.so': 'grammar.clause.adverbial',
+  'grammar.noun_clause': 'grammar.clause.noun',
+  'grammar.sva': 'grammar.agreement',
+  'grammar.subject_verb': 'grammar.agreement',
+  'grammar.subject_verb_agreement': 'grammar.agreement',
+  'grammar.comparison': 'grammar.adj_adv',
+  'grammar.article': 'grammar.article',
+  'grammar.pronoun': 'grammar.pronoun',
+  'grammar.preposition': 'grammar.preposition',
+  'grammar.conj': 'grammar.conjunction',
+  'grammar.parallel': 'grammar.conjunction',
+  'grammar.noun': 'grammar.noun',
+  'grammar.subjunctive': 'grammar.subjunctive',
+  'grammar.inversion': 'grammar.inversion',
+  'grammar.emphasis': 'grammar.emphasis',
+  'grammar.tag_question': 'grammar.tag_question',
+  'grammar.exclamation': 'grammar.exclamation',
+  'grammar.ellipsis': 'grammar.sentence_pattern',
+  'grammar.part_of_speech': 'grammar.word_formation',
+};
+
+/** 把任意题目标签归一到知识树标准 id；非语法/无映射的标签原样返回 */
+export function canonicalGrammarTag(tag: string): string {
+  if (!tag.startsWith('grammar.')) return tag;
+  if (GRAMMAR_TAG_ALIASES[tag]) return GRAMMAR_TAG_ALIASES[tag]!;
+  // 逐级回退：grammar.tense.past_perfect → grammar.tense → grammar.verb.tense
+  const parent = tag.slice(0, tag.lastIndexOf('.'));
+  return GRAMMAR_TAG_ALIASES[parent] ?? tag;
+}

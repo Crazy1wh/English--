@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Check, HelpCircle, RotateCw, X } from 'lucide-react';
+import { Check, HelpCircle, RotateCw, Volume2, X } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { allWords, gradeWord } from '@/store/db';
 import { useStore } from '@/store/useStore';
 import { isDue } from '@/engine/forgetting';
 import { todayStr } from '@/engine/date';
+import { speak } from '@/lib/speech';
 import type { Word, WordGrade } from '@/types';
 
 const GRADES: { key: WordGrade; label: string; cls: string }[] = [
@@ -83,7 +84,16 @@ export function WordStudyPage() {
         </div>
 
         <div className="card flex flex-1 flex-col items-center justify-center p-6 text-center">
-          <div className="text-4xl font-bold text-slate-800">{word.word}</div>
+          <div className="flex items-center justify-center gap-2">
+            <div className="text-4xl font-bold text-slate-800">{word.word}</div>
+            <button
+              onClick={() => speak(word.word)}
+              className="rounded-full p-1.5 text-brand-500 hover:bg-brand-50"
+              aria-label="播放单词发音"
+            >
+              <Volume2 size={20} />
+            </button>
+          </div>
           <div className="mt-2 text-slate-400">
             {word.phonetic} · {word.partOfSpeech}
           </div>
@@ -98,7 +108,12 @@ export function WordStudyPage() {
               {word.examMeanings.length > 0 && <p className="mt-1 text-sm text-slate-400">{word.examMeanings.join('；')}</p>}
               {word.exampleSentence && (
                 <div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm leading-6">
-                  <p className="text-slate-700">{word.exampleSentence.en}</p>
+                  <p className="flex items-start gap-1.5 text-slate-700">
+                    <button onClick={() => speak(word.exampleSentence!.en, 0.85)} className="mt-0.5 shrink-0 text-brand-500 hover:text-brand-700" aria-label="播放例句">
+                      <Volume2 size={15} />
+                    </button>
+                    {word.exampleSentence.en}
+                  </p>
                   <p className="mt-1 text-slate-400">{word.exampleSentence.zh}</p>
                 </div>
               )}

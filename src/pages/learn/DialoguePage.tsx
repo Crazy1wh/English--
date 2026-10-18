@@ -13,7 +13,7 @@ export function DialoguePage() {
   const [active, setActive] = useState<DialogueScene | null>(null);
   return (
     <div className="pb-nav">
-      <PageHeader title="补全对话 · 15 情景" back="/learn" />
+      <PageHeader title={`补全对话 · ${DIALOGUE_SCENES.length} 情景`} back="/learn" />
       <div className="px-4 pt-3">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {DIALOGUE_SCENES.map((d) => (

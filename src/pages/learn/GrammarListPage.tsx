@@ -17,7 +17,7 @@ export function GrammarListPage() {
   ];
   return (
     <div className="pb-nav">
-      <PageHeader title="语法 22 讲" back="/learn" />
+      <PageHeader title={`语法 ${GRAMMAR_TOPICS.length} 讲`} back="/learn" />
       <div className="px-4 pt-3">
         {groups.map(([p, title]) => (
           <div key={p}>

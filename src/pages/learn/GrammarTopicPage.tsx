@@ -2,10 +2,11 @@ import { Link, useParams } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, Lightbulb, ListChecks, Quote } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { Chip, EmptyState, MasteryBar } from '@/components/ui';
-import { GRAMMAR_TOPICS, SEED_QUESTIONS } from '@/data';
-import { getMastery } from '@/store/db';
+import { GRAMMAR_TOPICS, canonicalGrammarTag } from '@/data';
+import { allQuestions, getMastery } from '@/store/db';
 import { useStore } from '@/store/useStore';
 import { ERROR_TYPE_LABELS } from '@/engine/error-predict';
+import type { Question } from '@/types';
 
 export function GrammarTopicPage() {
   const { id } = useParams();
@@ -22,9 +23,14 @@ export function GrammarTopicPage() {
     );
   }
 
-  const relatedQuestions = SEED_QUESTIONS.filter((q) =>
-    q.knowledgeTags.some((t) => t === topic.knowledgeId || t.startsWith(topic.knowledgeId + '.')),
-  ).slice(0, 8);
+  const matchTopic = (q: Question) =>
+    q.knowledgeTags.some((t) => {
+      const c = canonicalGrammarTag(t);
+      return c === topic.knowledgeId || c.startsWith(topic.knowledgeId + '.');
+    });
+  const all = allQuestions();
+  const relatedQuestions = all.filter(matchTopic).slice(0, 8);
+  const realQuestions = all.filter((q) => matchTopic(q) && q.isRealExam);
 
   const recentWrongs = s.wrongs
     .filter((w) => relatedQuestions.some((q) => q.id === w.questionId))
@@ -101,16 +107,28 @@ export function GrammarTopicPage() {
           </section>
         )}
 
-        {/* 7. 真题示例槽位 */}
+        {/* 7. 真题示例（按 knowledgeTag 从已核验真题库真实派生） */}
         <section className="card p-4">
           <h3 className="flex items-center gap-1.5 font-semibold text-slate-800">
             <Quote size={16} className="text-slate-400" /> 真题示例
           </h3>
-          {topic.realExamQuestionIds.length > 0 ? (
+          {realQuestions.length > 0 ? (
+            <>
+              <p className="mt-2 text-sm text-slate-600">
+                已核验真题库中本专题相关题目 <b>{realQuestions.length}</b> 道（按知识点标签自动关联）。
+              </p>
+              <Link
+                to={`/practice/session?ids=${realQuestions.slice(0, 20).map((q) => q.id).join(',')}&title=${encodeURIComponent(topic.title + ' · 真题')}`}
+                className="btn-primary mt-3 w-full"
+              >
+                做本专题真题（{Math.min(realQuestions.length, 20)} 道） <ArrowRight size={16} />
+              </Link>
+            </>
+          ) : topic.realExamQuestionIds.length > 0 ? (
             <p className="mt-2 text-sm text-slate-600">已关联 {topic.realExamQuestionIds.length} 道核验真题。</p>
           ) : (
             <p className="mt-2 text-sm leading-6 text-slate-400">
-              暂无已核验真题。真题必须通过 抓取→来源留存→多源比对→人工核验 后才会出现在这里，AI 不会用模拟题冒充真题。
+              已核验真题库中暂无对应标签的题目。真题必须通过 抓取→来源留存→多源比对→人工核验 后才会出现在这里，AI 不会用模拟题冒充真题。
             </p>
           )}
         </section>

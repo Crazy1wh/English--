@@ -25,7 +25,7 @@ export function LearnPage() {
     {
       to: '/learn/grammar',
       icon: Library,
-      title: '语法 22 讲',
+      title: `语法 ${GRAMMAR_TOPICS.length} 讲`,
       desc: `P0 高频优先 · 掌握度 ${grammarRate}`,
       color: 'bg-emerald-50 text-emerald-600',
       extra: <MasteryBar value={grammarRate} size="sm" />,
@@ -52,10 +52,10 @@ export function LearnPage() {
       color: 'bg-rose-50 text-rose-600',
     },
     {
-      to: '/learn/grammar/G22',
+      to: '/practice/session?section=Phonetics&title=' + encodeURIComponent('语音辨音'),
       icon: Volume2,
       title: '语音基础',
-      desc: '元音/辅音辨音、单词重音（在刷题-语音中练习）',
+      desc: '元音/辅音辨音、单词重音（随机抽题练习）',
       color: 'bg-sky-50 text-sky-600',
     },
   ];
@@ -79,8 +79,9 @@ export function LearnPage() {
         ))}
       </div>
       <p className="mt-4 rounded-xl bg-slate-100 p-3 text-xs leading-5 text-slate-500">
-        内容说明：语法/对话/写作内容为人工编写的通用知识；词汇为手工演示词库（非官方 3800 词表），
-        核验后的大纲词表与真题请在「我的 → 内容管理」中导入。
+        内容说明：词库 {allWords().length} 个（手工整理的通用词，source: manual，非官方大纲词表）；
+        语法/对话/写作内容为人工编写的通用知识；真题/模拟题来自公开来源并标注可信度，
+        更多内容可在「我的 → 内容管理」中导入。
       </p>
     </div>
   );

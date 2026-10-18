@@ -151,4 +151,74 @@ export const DIALOGUE_SCENES: DialogueScene[] = [
       { en: "I'm afraid I must be going now.", zh: '恐怕我得走了。' },
     ],
   },
+  {
+    id: 'D16', knowledgeId: 'dialogue.D16', title: 'Weather 天气',
+    expressions: [
+      { en: "What's the weather like today?", zh: '今天天气怎么样？' },
+      { en: "It's sunny / cloudy / rainy / windy.", zh: '今天晴 / 多云 / 有雨 / 刮风。' },
+      { en: 'The radio says it will clear up this afternoon.', zh: '广播说下午会转晴。' },
+      { en: 'What a lovely day!', zh: '多好的天气啊！' },
+      { en: "It's raining heavily. You'd better take an umbrella.", zh: '雨下得很大，你最好带伞。' },
+    ],
+  },
+  {
+    id: 'D17', knowledgeId: 'dialogue.D17', title: 'Hotel 住酒店',
+    expressions: [
+      { en: "I'd like to book a single room for two nights.", zh: '我想订一间单人间，住两晚。' },
+      { en: 'Have you got any rooms available?', zh: '还有空房间吗？' },
+      { en: 'How much is a double room per night?', zh: '双人间一晚多少钱？' },
+      { en: 'Please fill in the registration form.', zh: '请填写住宿登记表。' },
+      { en: "I'm checking out. Could I have the bill?", zh: '我要退房，请把账单给我好吗？' },
+    ],
+  },
+  {
+    id: 'D18', knowledgeId: 'dialogue.D18', title: 'Bank & Post Office 银行与邮局',
+    expressions: [
+      { en: "I'd like to open an account.", zh: '我想开一个账户。' },
+      { en: 'How would you like to change these pounds, in tens or twenties?', zh: '这些英镑您想怎么换，十镑还是二十镑票面？' },
+      { en: "What's the exchange rate today?", zh: '今天的汇率是多少？' },
+      { en: "I'd like to send this parcel to Beijing by airmail.", zh: '我想把这个包裹航空寄到北京。' },
+      { en: 'How long does it take by regular mail?', zh: '普通邮件要多久？' },
+    ],
+  },
+  {
+    id: 'D19', knowledgeId: 'dialogue.D19', title: 'Job Interview 求职面试',
+    expressions: [
+      { en: 'Why do you want to work for our company?', zh: '你为什么想为我们公司工作？' },
+      { en: "I'm interested in the job and I have two years' experience.", zh: '我对这份工作感兴趣，并有两年经验。' },
+      { en: 'What are you good at?', zh: '你擅长什么？' },
+      { en: 'I can speak English fluently and I am easy to get along with.', zh: '我英语说得流利，而且容易相处。' },
+      { en: 'You will hear from us within a week.', zh: '一周内我们会通知你结果。' },
+    ],
+  },
+  {
+    id: 'D20', knowledgeId: 'dialogue.D20', title: 'Study 校园学习',
+    expressions: [
+      { en: 'How are you getting along with your English?', zh: '你的英语学得怎么样了？' },
+      { en: "I have some difficulty in listening.", zh: '我在听力方面有些困难。' },
+      { en: "You'd better listen to English tapes for 20 minutes every day.", zh: '你最好每天听 20 分钟英语磁带。' },
+      { en: 'May I borrow your notes? I missed yesterday’s class.', zh: '能借一下你的笔记吗？我缺了昨天的课。' },
+      { en: 'Practice makes perfect.', zh: '熟能生巧。' },
+    ],
+  },
+  {
+    id: 'D21', knowledgeId: 'dialogue.D21', title: 'Transport 交通出行',
+    expressions: [
+      { en: 'Does this bus go to the railway station?', zh: '这趟车去火车站吗？' },
+      { en: 'How often does the No. 5 bus run?', zh: '5 路车多久一班？' },
+      { en: 'Please get off at the next stop and change to the subway.', zh: '请下一站下车换乘地铁。' },
+      { en: 'Two tickets to Shanghai, please. How much are they?', zh: '请给我两张去上海的票，多少钱？' },
+      { en: 'The train leaves at 8:30 from Platform 3.', zh: '火车 8:30 从 3 站台发车。' },
+    ],
+  },
+  {
+    id: 'D22', knowledgeId: 'dialogue.D22', title: 'Hobbies 兴趣爱好',
+    expressions: [
+      { en: 'What do you like to do in your spare time?', zh: '你业余时间喜欢做什么？' },
+      { en: "I'm fond of / keen on reading and swimming.", zh: '我喜欢读书和游泳。' },
+      { en: 'How long have you been interested in painting?', zh: '你对画画感兴趣多久了？' },
+      { en: 'It helps me relax after a busy day.', zh: '它能让我在忙碌一天后放松下来。' },
+      { en: 'Would you like to play basketball with us this weekend?', zh: '这周末和我们一起打篮球好吗？' },
+    ],
+  },
 ];

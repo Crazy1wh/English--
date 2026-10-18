@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { PageHeader } from '@/components/PageHeader';
 import { Chip, EmptyState } from '@/components/ui';
 import { useStore } from '@/store/useStore';
-import { getPrediction } from '@/store/db';
+import { getPrediction, paperIsReal } from '@/store/db';
 import { SECTION_LABEL } from './MockExamPage';
 
 export function MockResultPage() {
@@ -22,13 +22,16 @@ export function MockResultPage() {
 
   const pct = result.questionCount ? Math.round((result.correctCount / result.questionCount) * 100) : 0;
   const minutes = Math.round(result.durationSec / 60);
+  const isReal = paperIsReal(result.paperId);
 
   return (
     <div className="pb-nav">
       <PageHeader title="模考结果" back="/exams" />
       <div className="space-y-4 px-4 pt-3">
         <section className="card p-6 text-center">
-          <div className="text-xs text-slate-400">演示卷折算分（满分 150，非官方难度）</div>
+          <div className="text-xs text-slate-400">
+            {isReal ? '真题卷折算分（收录题量非完整原卷，按正确率折算 150）' : '模拟卷折算分（满分 150，非官方难度）'}
+          </div>
           <div className="mt-1 text-5xl font-bold text-brand-600">{result.total}</div>
           <div className="mt-2 text-sm text-slate-500">
             答对 {result.correctCount}/{result.questionCount} · 正确率 {pct}% · 用时 {minutes} 分钟
@@ -68,7 +71,9 @@ export function MockResultPage() {
             <p className="mt-2 text-sm text-slate-400">数据不足（建议累计 60+ 题再看预测区间）。</p>
           )}
           <div className="mt-3">
-            <Chip color="amber">本次为演示卷，难度不代表真题</Chip>
+            <Chip color={isReal ? 'green' : 'amber'}>
+              {isReal ? '已核验真题片段，难度参考价值较高（非完整原卷）' : '本次为模拟/演示卷，难度不代表真题'}
+            </Chip>
           </div>
         </section>
 

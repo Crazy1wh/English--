@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+# 纯前端工具站（HashRouter），无需特殊抓取规则

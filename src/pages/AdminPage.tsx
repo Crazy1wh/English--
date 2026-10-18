@@ -33,6 +33,7 @@ export function AdminPage() {
   function validateWords(items: Partial<Word>[]): string | null {
     for (const [i, it] of items.entries()) {
       if (!it.id) return `第 ${i + 1} 条缺少 id`;
+      if (!it.word) return `第 ${i + 1} 条缺少 word`;
       if (!it.source || !SOURCES.includes(it.source)) {
         return `第 ${i + 1} 条缺少合法 source（允许：${SOURCES.join(' / ')}）`;
       }
@@ -68,12 +69,18 @@ export function AdminPage() {
 
   function doImportWords() {
     try {
-      const parsed = JSON.parse(wordJson) as Word[];
+      const parsed = JSON.parse(wordJson) as unknown;
       if (!Array.isArray(parsed)) throw new Error('内容必须是数组');
-      const err = validateWords(parsed);
+      let normalized: Word[];
+      try {
+        normalized = parsed.map((it) => normalizeWord(it as Partial<Word>));
+      } catch (e) {
+        return report(false, '词汇导入被拒绝：' + (e as Error).message);
+      }
+      const err = validateWords(normalized);
       if (err) return report(false, '词汇导入被拒绝：' + err);
-      importWords(parsed, mode);
-      report(true, `已${mode === 'replace' ? '替换' : '合并'} ${parsed.length} 个词（当前共 ${allWords().length} 个）`);
+      importWords(normalized, mode);
+      report(true, `已${mode === 'replace' ? '替换' : '合并'} ${normalized.length} 个词（当前共 ${allWords().length} 个）`);
       setWordJson('');
     } catch (e) {
       report(false, '词汇 JSON 解析失败：' + (e as Error).message);
@@ -82,18 +89,27 @@ export function AdminPage() {
 
   function doImportQuestions() {
     try {
-      const parsed = JSON.parse(questionJson) as Question[];
+      const parsed = JSON.parse(questionJson) as unknown;
       if (!Array.isArray(parsed)) throw new Error('内容必须是数组');
-      const err = validateQuestions(parsed);
+      let normalized: Question[];
+      try {
+        normalized = parsed.map((it, i) => normalizeQuestion(it as Partial<Question> & Record<string, unknown>, i));
+      } catch (e) {
+        return report(false, '题目导入被拒绝：' + (e as Error).message);
+      }
+      const err = validateQuestions(normalized);
       if (err) return report(false, '题目导入被拒绝：' + err);
-      for (const [i, q] of parsed.entries()) {
-        if (!q.questionText || !q.options || q.answer == null) {
+      for (const [i, q] of normalized.entries()) {
+        if (!q.questionText || q.options.length === 0 || q.answer == null) {
           return report(false, `第 ${i + 1} 题缺少 questionText/options/answer`);
+        }
+        if (!q.options[q.answer.charCodeAt(0) - 65]) {
+          return report(false, `第 ${i + 1} 题 answer="${q.answer}" 超出 options 范围`);
         }
         if (!q.explanation) return report(false, `第 ${i + 1} 题缺少 explanation（每道题必须有解析）`);
       }
-      importQuestions(parsed, mode);
-      report(true, `已${mode === 'replace' ? '替换' : '合并'} ${parsed.length} 道题（当前共 ${allQuestions().length} 道）`);
+      importQuestions(normalized, mode);
+      report(true, `已${mode === 'replace' ? '替换' : '合并'} ${normalized.length} 道题（当前共 ${allQuestions().length} 道）`);
       setQuestionJson('');
     } catch (e) {
       report(false, '题目 JSON 解析失败：' + (e as Error).message);
@@ -109,6 +125,7 @@ export function AdminPage() {
     '    "word": "example",',
     '    "phonetic": "/ɪɡˈzɑːmpl/",',
     '    "partOfSpeech": "n.",',
+    '    "coreMeaning": "例子；榜样",',
     '    "level": "L2",',
     '    "source": "manual",',
     '    "examYears": []',
@@ -122,11 +139,11 @@ export function AdminPage() {
     '    "id": "q.custom.001",',
     '    "section": "Grammar",',
     '    "questionType": "single_choice",',
-    '    "questionText": "...",',
-    '    "options": {"A": "...", "B": "...", "C": "...", "D": "..."},',
+    '    "questionText": "...题干...",',
+    '    "options": ["A选项", "B选项", "C选项", "D选项"],',
     '    "answer": "B",',
-    '    "knowledgeTags": ["G03"],',
-    '    "explanation": { "answer": "B", "why": "...", "knowledgePoint": "..." },',
+    '    "knowledgeTags": ["grammar.verb.tense"],',
+    '    "explanation": { "conclusion": "选B", "keyPoint": "考点", "whyCorrect": "...", "whyWrong": [] } ,',
     '    "source": "manual",',
     '    "reliability": "D",',
     '    "isRealExam": false',
@@ -226,4 +243,120 @@ function ImportBox({
       </button>
     </section>
   );
+}
+
+// ---------------- 导入归一化 ----------------
+// 用户/外部 JSON 只要求核心字段，其余按安全默认值补齐，
+// 并兼容历史写法（options 对象、explanation 旧字段名），避免缺字段导致页面崩溃。
+
+const WORD_LEVELS = ['L1', 'L2', 'L3', 'L4', 'L5'] as const;
+const SECTIONS = ['Phonetics', 'Vocabulary', 'Grammar', 'Cloze', 'Reading', 'Dialogue', 'Writing'] as const;
+const DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
+
+function asString(v: unknown, fallback = ''): string {
+  return typeof v === 'string' ? v : v == null ? fallback : String(v);
+}
+function asStringArray(v: unknown): string[] {
+  return Array.isArray(v) ? v.map((x) => String(x)) : [];
+}
+
+export function normalizeWord(it: Partial<Word> & Record<string, unknown>, index = 0): Word {
+  const word = asString(it.word).trim();
+  if (!word) throw new Error(`第 ${index + 1} 条缺少 word`);
+  const level = WORD_LEVELS.includes(it.level as (typeof WORD_LEVELS)[number]) ? (it.level as Word['level']) : 'L2';
+  const example = it.exampleSentence && typeof it.exampleSentence === 'object'
+    ? { en: asString((it.exampleSentence as Record<string, unknown>).en), zh: asString((it.exampleSentence as Record<string, unknown>).zh) }
+    : null;
+  return {
+    id: asString(it.id) || `word.${word.replace(/\s+/g, '_')}`,
+    word,
+    phonetic: asString(it.phonetic),
+    partOfSpeech: asString(it.partOfSpeech),
+    coreMeaning: asString(it.coreMeaning),
+    examMeanings: asStringArray(it.examMeanings),
+    level,
+    frequencyScore: typeof it.frequencyScore === 'number' ? it.frequencyScore : 0,
+    phrases: asStringArray(it.phrases),
+    collocations: asStringArray(it.collocations),
+    synonyms: asStringArray(it.synonyms),
+    antonyms: asStringArray(it.antonyms),
+    confusingWords: asStringArray(it.confusingWords),
+    wordFamily: asStringArray(it.wordFamily),
+    exampleSentence: example?.en ? example : null,
+    source: (asString(it.source) || 'manual') as Word['source'],
+    examYears: Array.isArray(it.examYears) ? it.examYears.filter((y): y is number => typeof y === 'number') : [],
+    knowledgeTags: asStringArray(it.knowledgeTags),
+  };
+}
+
+/** 兼容 options: string[] 与 {A:'...', B:'...'} 两种写法 */
+function normalizeOptions(v: unknown): string[] {
+  if (Array.isArray(v)) return v.map((x) => String(x));
+  if (v && typeof v === 'object') {
+    const obj = v as Record<string, unknown>;
+    return 'ABCDEFG'.split('').filter((k) => obj[k] != null).map((k) => String(obj[k]));
+  }
+  return [];
+}
+
+function normalizeExplanation(v: unknown): Question['explanation'] {
+  const e = (v && typeof v === 'object' ? v : {}) as Record<string, unknown>;
+  // 兼容旧格式 {answer, why, knowledgePoint}
+  const whyWrong = Array.isArray(e.whyWrong)
+    ? e.whyWrong
+        .map((x) => x as Record<string, unknown>)
+        .filter((x) => x && typeof x.option === 'string')
+        .map((x) => ({ option: String(x.option), reason: asString(x.reason) }))
+    : [];
+  return {
+    conclusion: asString(e.conclusion) || (e.answer ? `正确答案：${asString(e.answer)}` : ''),
+    keyPoint: asString(e.keyPoint) || asString(e.knowledgePoint),
+    whyCorrect: asString(e.whyCorrect) || asString(e.why),
+    whyWrong,
+    relatedKnowledge: asStringArray(e.relatedKnowledge),
+    mnemonic: typeof e.mnemonic === 'string' ? e.mnemonic : undefined,
+  };
+}
+
+export function normalizeQuestion(it: Partial<Question> & Record<string, unknown>, index = 0): Question {
+  const section = SECTIONS.includes(it.section as (typeof SECTIONS)[number])
+    ? (it.section as Question['section'])
+    : 'Grammar';
+  const options = normalizeOptions(it.options);
+  if (options.length === 0) throw new Error(`第 ${index + 1} 题 options 必须为非空数组（或 A-D 对象）`);
+  const answer = asString(it.answer).toUpperCase();
+  if (!answer || !/^[A-G]$/.test(answer)) throw new Error(`第 ${index + 1} 题 answer 必须是 A-G 的选项字母`);
+  const difficulty = DIFFICULTIES.includes(it.difficulty as (typeof DIFFICULTIES)[number])
+    ? (it.difficulty as Question['difficulty'])
+    : 'normal';
+  const now = new Date().toISOString();
+  return {
+    id: asString(it.id),
+    exam: typeof it.exam === 'string' ? it.exam : null,
+    year: typeof it.year === 'number' ? it.year : null,
+    region: typeof it.region === 'string' ? it.region : null,
+    source: (asString(it.source) || 'manual') as Question['source'],
+    sourceUrl: typeof it.sourceUrl === 'string' ? it.sourceUrl : null,
+    reliability: (['A', 'B', 'C', 'D'].includes(asString(it.reliability)) ? asString(it.reliability) : 'D') as Question['reliability'],
+    isRealExam: it.isRealExam === true,
+    status: it.status === 'needs_review' ? 'needs_review' : 'active',
+    section,
+    questionType: asString(it.questionType, 'single_choice'),
+    passage: typeof it.passage === 'string' ? it.passage : undefined,
+    groupId: typeof it.groupId === 'string' ? it.groupId : undefined,
+    groupTitle: typeof it.groupTitle === 'string' ? it.groupTitle : undefined,
+    questionText: asString(it.questionText),
+    options,
+    answer,
+    explanation: normalizeExplanation(it.explanation),
+    knowledgeTags: asStringArray(it.knowledgeTags),
+    skillTags: asStringArray(it.skillTags),
+    difficulty,
+    frequencyLevel: typeof it.frequencyLevel === 'number' ? it.frequencyLevel : null,
+    createdAt: asString(it.createdAt, now),
+    updatedAt: asString(it.updatedAt, now),
+    generatedByAi: it.generatedByAi === true,
+    model: typeof it.model === 'string' ? it.model : null,
+    promptVersion: typeof it.promptVersion === 'string' ? it.promptVersion : null,
+  };
 }

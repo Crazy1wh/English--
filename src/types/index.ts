@@ -177,7 +177,7 @@ export interface Question {
   isRealExam: boolean; // 仅 reliability A/B 可为 true
   status: 'active' | 'needs_review';
   section: Section;
-  /** R01..R06 / C01..C10 / D01..D15 / 语法知识节点 id 等 */
+  /** R01..R06 / C01..C10 / D01..D22 / 语法知识节点 id 等 */
   questionType: string;
   /** 阅读理解/完形的文章 */
   passage?: string;

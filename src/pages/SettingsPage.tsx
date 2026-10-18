@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
-import { Download, RotateCcw, Upload } from 'lucide-react';
+import { AlertTriangle, Download, HardDrive, RotateCcw, Upload } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { useStore } from '@/store/useStore';
-import { exportData, resetAll, restoreData, updateSettings } from '@/store/db';
+import { exportData, getStorageHealth, resetAll, restoreData, updateSettings } from '@/store/db';
 import type { AiConfig, Settings } from '@/types';
 
 const MINUTE_OPTIONS = [20, 30, 45, 60, 90];
@@ -13,6 +13,7 @@ export function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState('');
   const ai: AiConfig = s.settings.ai;
+  const health = getStorageHealth();
 
   function downloadBackup() {
     const blob = new Blob([exportData()], { type: 'application/json' });
@@ -119,6 +120,22 @@ export function SettingsPage() {
         {/* 数据管理 */}
         <section className="card space-y-3 p-4">
           <h3 className="text-sm font-semibold text-slate-700">数据管理</h3>
+          {health.degraded && (
+            <div className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-700">
+              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+              <div>
+                浏览器本地存储写入失败（空间不足或处于隐私模式）。学习进度可能无法保存，
+                请立即点击「导出备份」，并删除不再需要的自定义词库/题库后再继续使用。
+                {health.pruned > 0 && ` 系统已自动清理 ${health.pruned} 条早期答题记录。`}
+              </div>
+            </div>
+          )}
+          {!health.degraded && health.pruned > 0 && (
+            <div className="flex items-start gap-2 rounded-xl bg-sky-50 p-3 text-xs leading-5 text-sky-700">
+              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+              <div>本地存储接近上限，系统已自动清理 {health.pruned} 条早期答题记录（不影响近期计划与预测）。建议导出备份。</div>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             <button className="btn-outline" onClick={downloadBackup}>
               <Download size={16} /> 导出备份
@@ -146,6 +163,10 @@ export function SettingsPage() {
           >
             <RotateCcw size={16} /> 重置全部数据
           </button>
+          <p className="flex items-center gap-1.5 text-xs text-slate-400">
+            <HardDrive size={13} /> 学习数据保存在本浏览器，当前占用约 {health.approxKb} KB
+            （浏览器上限通常为 5 MB）。
+          </p>
           {msg && <p className="text-xs text-emerald-600">{msg}</p>}
         </section>
       </div>

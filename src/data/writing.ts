@@ -51,7 +51,7 @@ Li Hua`,
     safeSentences: [
       'You should spend more time reading English every day.',
       "Why not ask your teacher for help?",
-      'Don not be afraid of making mistakes.',
+      "Don't be afraid of making mistakes.",
       'Practice makes perfect.',
     ],
     sampleEssay: {
@@ -189,6 +189,135 @@ Li Hua`,
       'In a word, let us develop a good habit of reading.',
     ],
     sampleEssay: { prompt: '以“Reading is important”为题写一篇短文。', text: '' },
+  },
+  {
+    id: 'complaint',
+    knowledgeId: 'writing.W2',
+    title: '投诉信',
+    format: ['开头：自我介绍 + 说明写信目的（投诉）', '主体：购买/服务经过、问题是什么、造成的不便', '结尾：明确诉求（退款/换货/修理）+ 限定答复时间', '落款'],
+    functionalExpressions: [
+      "I'm writing to complain about...",
+      'I am not satisfied with...',
+      'There is something wrong with...',
+      'I hope you can deal with this problem as soon as possible.',
+      'I am looking forward to your early reply.',
+    ],
+    connectors: ['First', 'Then', 'What is worse', 'However'],
+    safeSentences: [
+      'I bought a mobile phone in your shop last week.',
+      'It did not work well when I got home.',
+      'I called your service center, but nobody helped me.',
+      'I hope I can get my money back or get a new one.',
+    ],
+    sampleEssay: {
+      prompt: '你在某商店买了一部手机，回家后发现有质量问题，与客服沟通无果。请给商店经理写一封投诉信。',
+      text: `Dear Manager,
+
+I am writing to complain about a mobile phone I bought in your shop last week.
+
+When I got home, I found there was something wrong with it. It often turned itself off, and the camera did not work at all. I called your service center, but nobody could help me. This brought me much trouble.
+
+I hope you can deal with this problem as soon as possible. I would like to get my money back or get a new phone. I am looking forward to your early reply.
+
+Yours,
+Li Hua`,
+    },
+  },
+  {
+    id: 'congratulation',
+    knowledgeId: 'writing.W2',
+    title: '祝贺信',
+    format: ['开头：直接表达祝贺 + 祝贺的事由', '主体：对方为此付出的努力、自己为其高兴', '结尾：再次祝贺 + 美好祝愿', '落款'],
+    functionalExpressions: [
+      'Congratulations on your...',
+      'I was so glad to hear that...',
+      'You really deserve it because...',
+      'I am sure you will have a bright future.',
+      'Best wishes and good luck.',
+    ],
+    connectors: ['First of all', 'Also', 'Besides', 'At last'],
+    safeSentences: [
+      'Congratulations on winning first prize in the English contest.',
+      'I know how hard you have worked for it.',
+      'Your English is really good and we are all proud of you.',
+      'I hope you will make greater progress in the future.',
+    ],
+    sampleEssay: {
+      prompt: '你的朋友王明在学校英语演讲比赛中获得一等奖，请写一封邮件向他表示祝贺。',
+      text: `Dear Wang Ming,
+
+Congratulations on winning first prize in the school English speech contest! I was so glad to hear the good news.
+
+You really deserve it. I know how hard you have practiced every morning. Besides, you are always ready to help others with their English. We are all proud of you.
+
+I am sure you will have a bright future. Best wishes and good luck!
+
+Yours,
+Li Hua`,
+    },
+  },
+  {
+    id: 'leave_note',
+    knowledgeId: 'writing.W2',
+    title: '请假条 / 请假邮件',
+    format: ['称呼：Dear ...,', '开头：开门见山说明请假（几天、哪几天）', '主体：请假原因 + 工作/学习安排（补交作业等）', '结尾：恳请批准、表示感谢', '落款'],
+    functionalExpressions: [
+      "I'm writing to ask for a leave of... days.",
+      'I am sorry that I cannot go to school / work as usual.',
+      'The reason is that...',
+      'I will try my best to catch up with my lessons.',
+      'I would be thankful if you could agree with my request.',
+    ],
+    connectors: ['First', 'Also', 'When I come back', 'At last'],
+    safeSentences: [
+      "I'm writing to ask for a sick leave of two days.",
+      'I have a bad cold and the doctor asked me to stay in bed.',
+      'When I come back, I will hand in my homework on time.',
+      'I hope you can agree with my request. Thank you very much.',
+    ],
+    sampleEssay: {
+      prompt: '你得了重感冒，医生建议卧床休息两天。请给班主任写一张请假条，说明原因并说明会补上功课。',
+      text: `Dear Mr. Li,
+
+I am sorry to tell you that I cannot go to school today and tomorrow. I am writing to ask for a sick leave of two days.
+
+I have a bad cold and a slight fever. The doctor asked me to stay in bed and take medicine on time. When I come back to school, I will try my best to catch up with my lessons and hand in my homework on time.
+
+I hope you can agree with my request. Thank you very much.
+
+Yours,
+Zhang Wei`,
+    },
+  },
+  {
+    id: 'diary',
+    knowledgeId: 'writing.W2',
+    title: '日记',
+    format: ['开头：日期 + 天气（左上角）', '正文：按时间顺序记叙事件（经过、活动）', '结尾：感受或收获', '时态以一般过去时为主'],
+    functionalExpressions: [
+      'June 12th, Sunday          Fine',
+      'Today we had a good time.',
+      'Early in the morning, we set out for...',
+      'What an unforgettable day it was!',
+      'From this experience, I learned that...',
+    ],
+    connectors: ['At first', 'Then', 'After that', 'Finally'],
+    safeSentences: [
+      'Early in the morning, we met at the school gate.',
+      'Then we climbed the hill and had a picnic at the top.',
+      'We did not go home until four o’clock in the afternoon.',
+      'Tired but happy, we all had a wonderful day.',
+    ],
+    sampleEssay: {
+      prompt: '请以日记形式记叙上周日你和同学们一起去公园植树/野餐的活动，包括时间、经过和感受。',
+      text: `May 20th, Sunday          Fine
+
+Today my classmates and I went to People's Park for a spring outing. We all had a good time.
+
+Early in the morning, we met at the school gate and went there by bike. Then we climbed the hill and had a picnic at the top. After that, we played games and took many photos. Finally, we helped clean up the rubbish before leaving.
+
+Tired but happy, we went home at about four o'clock. What an unforgettable day it was!`,
+    },
   },
 ];
 
